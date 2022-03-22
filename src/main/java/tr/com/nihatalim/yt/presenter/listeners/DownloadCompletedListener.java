@@ -5,11 +5,9 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import tr.com.nihatalim.yt.core.dto.DownloadProgressDto;
-import tr.com.nihatalim.yt.presenter.entity.Content;
-import tr.com.nihatalim.yt.presenter.entity.ContentDetail;
 import tr.com.nihatalim.yt.core.enums.ProgressStatus;
 import tr.com.nihatalim.yt.core.enums.TopicEnum;
-import tr.com.nihatalim.yt.presenter.entity.DownloadProgress;
+import tr.com.nihatalim.yt.presenter.entity.ContentDetail;
 import tr.com.nihatalim.yt.presenter.repository.ContentDetailRepository;
 import tr.com.nihatalim.yt.presenter.repository.ContentRepository;
 import tr.com.nihatalim.yt.presenter.repository.DownloadProgressRepository;
@@ -17,7 +15,6 @@ import tr.com.nihatalim.yt.presenter.service.DistributionService;
 import tr.com.nihatalim.yt.presenter.util.YoutubeUrlUtil;
 
 import javax.transaction.Transactional;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -34,7 +31,7 @@ public class DownloadCompletedListener {
         this.contentRepository = contentRepository;
     }
 
-    @KafkaListener(topics = {"DOWNLOAD_COMPLETED_EVENT"})
+    @KafkaListener(topics = "${app.kafka.topics.download-completed-event}")
     @Transactional
     public void downloadCompleted(ConsumerRecord<Long, DownloadProgressDto> record) {
         final DownloadProgressDto downloadProgressDto = record.value();

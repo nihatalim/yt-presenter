@@ -1,6 +1,5 @@
 package tr.com.nihatalim.yt.presenter.config;
 
-import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.LongDeserializer;
@@ -13,16 +12,13 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
-import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import tr.com.nihatalim.yt.core.dto.DownloadProgressDto;
-import tr.com.nihatalim.yt.core.enums.TopicEnum;
 import tr.com.nihatalim.yt.presenter.util.ApplicationUtil;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,8 +26,14 @@ import java.util.Map;
 @EnableKafka
 public class KafkaConfig {
 
-    @Value("${app.kafka.bootstrap-servers}")
+    @Value("${app.kafka.brokers}")
     private String bootstrapAddress;
+
+    @Value("${KAFKA_USERNAME}")
+    private String kafkaUsername;
+
+    @Value("${KAFKA_PASSWORD}")
+    private String kafkaPassword;
 
     @Value("${app.kafka.group-id}")
     private String groupId;
@@ -47,10 +49,12 @@ public class KafkaConfig {
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        configProps.put(ProducerConfig.MAX_REQUEST_SIZE_CONFIG, 1048576000);
+        configProps.put("security.protocol", "SASL_SSL");
+        configProps.put("sasl.mechanism", "SCRAM-SHA-256");
+        configProps.put("sasl.jaas.config", "org.apache.kafka.common.security.scram.ScramLoginModule required username='" + kafkaUsername + "' password='" + kafkaPassword + "';");
+
         return new DefaultKafkaProducerFactory<>(configProps);
     }
-
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<Long, DownloadProgressDto> kafkaListenerContainerFactory(ConsumerFactory<Long, DownloadProgressDto> consumerFactory) {
@@ -74,15 +78,9 @@ public class KafkaConfig {
         props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, 60000);
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+        props.put("security.protocol", "SASL_SSL");
+        props.put("sasl.mechanism", "SCRAM-SHA-256");
+        props.put("sasl.jaas.config", "org.apache.kafka.common.security.scram.ScramLoginModule required username='" + kafkaUsername + "' password='" + kafkaPassword + "';");
         return new DefaultKafkaConsumerFactory<>(props, new LongDeserializer(), jsonDeserializer);
-    }
-
-    @Bean
-    public KafkaAdmin.NewTopics topics() {
-        final NewTopic[] topics = Arrays.stream(TopicEnum.values())
-            .map(item -> new NewTopic(item.getTopicName(), item.getPartitionNumber(), (short) 1))
-            .toArray(NewTopic[]::new);
-
-        return new KafkaAdmin.NewTopics(topics);
     }
 }

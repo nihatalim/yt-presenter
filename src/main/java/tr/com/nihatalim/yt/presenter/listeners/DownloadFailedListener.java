@@ -28,7 +28,7 @@ public class DownloadFailedListener {
         this.contentRepository = contentRepository;
     }
 
-    @KafkaListener(topics = {"DOWNLOAD_FAILED_EVENT"})
+    @KafkaListener(topics = "${app.kafka.topics.download-failed-event}")
     @Transactional
     public void downloadFailed(ConsumerRecord<Long, DownloadProgressDto> record) {
         final DownloadProgressDto downloadProgressDto = record.value();
