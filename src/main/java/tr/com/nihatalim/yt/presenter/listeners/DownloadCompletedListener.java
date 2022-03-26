@@ -15,6 +15,7 @@ import tr.com.nihatalim.yt.presenter.service.DistributionService;
 import tr.com.nihatalim.yt.presenter.util.YoutubeUrlUtil;
 
 import javax.transaction.Transactional;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -46,12 +47,7 @@ public class DownloadCompletedListener {
                 downloadProgressRepository.save(downloadProgress);
             });
 
-        final ContentDetail contentDetail = new ContentDetail();
-        contentDetail.setContentId(downloadProgressDto.getContentId());
-        contentDetail.setContentType(downloadProgressDto.getContentType());
-        contentDetail.setExtension(downloadProgressDto.getStorageExtension());
-        contentDetail.setStorageUrl(downloadProgressDto.getStorageUrl());
-        contentDetailRepository.saveAndFlush(contentDetail);
+        final ContentDetail contentDetail = createContentDetailIfNotPresent(downloadProgressDto);
 
         contentRepository.findContentByYoutubeId(YoutubeUrlUtil.getYoutubeIdFromYoutubeUrl(downloadProgressDto.getYoutubeUrl()))
             .ifPresent(content -> {
@@ -64,5 +60,20 @@ public class DownloadCompletedListener {
         downloadProgressDto.setProgressStatus(ProgressStatus.COMPLETED);
 
         distributionService.send(TopicEnum.DOWNLOAD_PROGRESS_COMPLETED_EVENT, downloadProgressDto);
+    }
+
+    private ContentDetail createContentDetailIfNotPresent(DownloadProgressDto downloadProgressDto) {
+        final Optional<ContentDetail> contentDetail = contentDetailRepository.findContentDetailByContentIdAndContentTypeAndExtension(downloadProgressDto.getContentId(), downloadProgressDto.getContentType(), downloadProgressDto.getExtension());
+
+        if (contentDetail.isEmpty()) {
+            final ContentDetail cd = new ContentDetail();
+            cd.setContentId(downloadProgressDto.getContentId());
+            cd.setContentType(downloadProgressDto.getContentType());
+            cd.setExtension(downloadProgressDto.getStorageExtension());
+            cd.setStorageUrl(downloadProgressDto.getStorageUrl());
+            return contentDetailRepository.saveAndFlush(cd);
+        }
+
+        return contentDetail.get();
     }
 }

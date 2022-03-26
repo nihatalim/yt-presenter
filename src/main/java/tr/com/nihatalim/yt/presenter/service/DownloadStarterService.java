@@ -16,6 +16,7 @@ import tr.com.nihatalim.yt.presenter.repository.DownloadProgressRepository;
 import tr.com.nihatalim.yt.presenter.util.YoutubeUrlUtil;
 
 import javax.transaction.Transactional;
+import java.util.Objects;
 
 @Service
 public class DownloadStarterService {
@@ -50,23 +51,16 @@ public class DownloadStarterService {
         DownloadProgress downloadProgress = null;
         DownloadProgressDto downloadProgressDto = null;
 
-        final boolean contentAlreadyDownloaded = contentDetail != null;
         final boolean contentAnyDownloadedBefore = content == null;
-
-        if (contentAlreadyDownloaded) {
-            downloadProgress = createDownloadProgress(content, request, ProgressStatus.COMPLETED);
-
-            downloadProgressDto = downloadProgressConverter.convert(downloadProgress);
-            downloadProgressDto.setStorageExtension(request.getExtension());
-        }
 
         if (contentAnyDownloadedBefore) {
             content = createContent(request);
         }
 
-        downloadProgress = createDownloadProgress(content, request, ProgressStatus.DOWNLOADING);
+        downloadProgress = createDownloadProgress(content, contentDetail, request);
 
         downloadProgressDto = downloadProgressConverter.convert(downloadProgress);
+        downloadProgressDto.setStorageExtension(request.getExtension());
 
         sendDistribution(downloadProgressDto);
     }
@@ -85,7 +79,7 @@ public class DownloadStarterService {
         return contentRepository.saveAndFlush(content);
     }
 
-    private DownloadProgress createDownloadProgress(Content content, StartDownloadRequest request, ProgressStatus progressStatus) {
+    private DownloadProgress createDownloadProgress(Content content, ContentDetail contentDetail, StartDownloadRequest request) {
         final DownloadProgress downloadProgress = new DownloadProgress();
 
         downloadProgress.setContentId(content.getContentId());
@@ -93,7 +87,12 @@ public class DownloadStarterService {
         downloadProgress.setYoutubeUrl(request.getYoutubeUrl());
         downloadProgress.setExtension(request.getExtension());
         downloadProgress.setUserId(request.getUserId());
-        downloadProgress.setProgressStatus(progressStatus);
+        downloadProgress.setProgressStatus(Objects.isNull(contentDetail) ? ProgressStatus.DOWNLOADING : ProgressStatus.COMPLETED);
+
+        if (Objects.nonNull(contentDetail)) {
+            downloadProgress.setStorageUrl(contentDetail.getStorageUrl());
+            downloadProgress.setContentName(content.getContentName());
+        }
 
         return downloadProgressRepository.saveAndFlush(downloadProgress);
     }
