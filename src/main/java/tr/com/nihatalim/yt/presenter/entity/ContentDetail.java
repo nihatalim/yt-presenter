@@ -2,7 +2,7 @@ package tr.com.nihatalim.yt.presenter.entity;
 
 import lombok.Getter;
 import lombok.Setter;
-import tr.com.nihatalim.yt.presenter.enums.ContentType;
+import tr.com.nihatalim.yt.core.enums.ContentType;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

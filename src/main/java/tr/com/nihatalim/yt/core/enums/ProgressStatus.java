@@ -1,4 +1,4 @@
-package tr.com.nihatalim.yt.presenter.enums;
+package tr.com.nihatalim.yt.core.enums;
 
 public enum ProgressStatus {
     DOWNLOADING(1),
