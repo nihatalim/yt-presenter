@@ -1,6 +1,5 @@
 package tr.com.nihatalim.yt.presenter.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -15,14 +14,12 @@ import tr.com.nihatalim.yt.presenter.exception.KafkaProduceFailedException;
 @Service
 public class DistributionService {
     private final KafkaTemplate<Long, DownloadProgressDto> kafkaTemplate;
-    private final ObjectMapper objectMapper;
 
     @Value("${app.kafka.topic.prefix}")
     private String topicPrefix;
 
-    public DistributionService(KafkaTemplate<Long, DownloadProgressDto> kafkaTemplate, ObjectMapper objectMapper) {
+    public DistributionService(KafkaTemplate<Long, DownloadProgressDto> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
-        this.objectMapper = objectMapper;
     }
 
     public void send(TopicEnum topicEnum, DownloadProgressDto item) {
