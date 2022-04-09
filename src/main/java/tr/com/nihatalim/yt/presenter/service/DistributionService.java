@@ -14,12 +14,14 @@ import tr.com.nihatalim.yt.presenter.exception.KafkaProduceFailedException;
 @Service
 public class DistributionService {
     private final KafkaTemplate<Long, DownloadProgressDto> kafkaTemplate;
+    private final SerializerService serializerService;
 
     @Value("${app.kafka.topic.prefix}")
     private String topicPrefix;
 
-    public DistributionService(KafkaTemplate<Long, DownloadProgressDto> kafkaTemplate) {
+    public DistributionService(KafkaTemplate<Long, DownloadProgressDto> kafkaTemplate, SerializerService serializerService) {
         this.kafkaTemplate = kafkaTemplate;
+        this.serializerService = serializerService;
     }
 
     public void send(TopicEnum topicEnum, DownloadProgressDto item) {
@@ -32,7 +34,7 @@ public class DistributionService {
 
                 @Override
                 public void onSuccess(SendResult<Long, DownloadProgressDto> result) {
-                    log.info("[DistributionService] Producer success for topic: {} and for item: {}", result.getRecordMetadata().topic(), result.getProducerRecord().value());
+                    log.info("[DistributionService] Producer success for topic: {} and for item: {}", result.getRecordMetadata().topic(), serializerService.serialize(result.getProducerRecord().value()));
                 }
             });
         } catch (Exception e) {
