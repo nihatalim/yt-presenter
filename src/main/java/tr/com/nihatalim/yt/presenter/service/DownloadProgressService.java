@@ -2,8 +2,8 @@ package tr.com.nihatalim.yt.presenter.service;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import tr.com.nihatalim.yt.core.dto.DownloadProgressDto;
-import tr.com.nihatalim.yt.presenter.converter.DownloadProgressConverter;
+import tr.com.nihatalim.yt.presenter.converter.DownloadProgressResponseConverter;
+import tr.com.nihatalim.yt.presenter.dto.response.DownloadProgressResponse;
 import tr.com.nihatalim.yt.presenter.entity.AppUser;
 import tr.com.nihatalim.yt.presenter.entity.DownloadProgress;
 import tr.com.nihatalim.yt.presenter.repository.DownloadProgressPagingRepository;
@@ -16,15 +16,15 @@ import java.util.stream.Collectors;
 public class DownloadProgressService {
     private final UserRepository userRepository;
     private final DownloadProgressPagingRepository downloadProgressRepository;
-    private final DownloadProgressConverter downloadProgressConverter;
+    private final DownloadProgressResponseConverter downloadProgressConverter;
 
-    public DownloadProgressService(UserRepository userRepository, DownloadProgressPagingRepository downloadProgressRepository, DownloadProgressConverter downloadProgressConverter) {
+    public DownloadProgressService(UserRepository userRepository, DownloadProgressPagingRepository downloadProgressRepository, DownloadProgressResponseConverter downloadProgressConverter) {
         this.userRepository = userRepository;
         this.downloadProgressRepository = downloadProgressRepository;
         this.downloadProgressConverter = downloadProgressConverter;
     }
 
-    public List<DownloadProgressDto> getDownloadProgressList(String mail, Pageable pageable) {
+    public List<DownloadProgressResponse> getDownloadProgressList(String mail, Pageable pageable) {
         final AppUser appUser = userRepository.findByMail(mail).orElseThrow();
 
         final List<DownloadProgress> downloadProgresses = downloadProgressRepository.getDownloadProgressesByUserIdOrderByCreatedDateDesc(String.valueOf(appUser.getUserId()), pageable);

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import tr.com.nihatalim.yt.core.dto.DownloadProgressDto;
+import tr.com.nihatalim.yt.presenter.dto.response.DownloadProgressResponse;
 import tr.com.nihatalim.yt.presenter.service.DownloadProgressService;
 
 import java.util.List;
@@ -23,7 +23,7 @@ public class UserDownloadProgressController {
     }
 
     @GetMapping
-    public List<DownloadProgressDto> getProgress(@RequestParam(name = "size", required = false, defaultValue = "10") Integer size, @RequestParam(name = "page", required = false, defaultValue = "0") Integer page) {
+    public List<DownloadProgressResponse> getProgress(@RequestParam(name = "size", required = false, defaultValue = "10") Integer size, @RequestParam(name = "page", required = false, defaultValue = "0") Integer page) {
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         final User user = ((User) authentication.getPrincipal());
 
